@@ -2,17 +2,17 @@
   "name": "jaiph-syntax-vscode",
   "displayName": "Jaiph Syntax",
   "description": "Syntax highlighting support for Jaiph (.jph) files",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "jaiph",
   "license": "MIT",
   "icon": "media/icon.png",
   "homepage": "https://jaiph.org",
   "bugs": {
-    "url": "https://github.com/jaiphlang/jaiph/issues"
+    "url": "https://github.com/jaiphlang/jaiph-syntax-vscode/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jaiphlang/jaiph"
+    "url": "https://github.com/jaiphlang/jaiph-syntax-vscode"
   },
   "scripts": {
     "package": "vsce package"

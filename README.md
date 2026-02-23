@@ -2,6 +2,9 @@
 
 Syntax highlighting support for Jaiph (`.jph`) files.
 
+- Website: [jaiph.org](https://jaiph.org)
+- Repository: [github.com/jaiphlang/jaiph-syntax-vscode](https://github.com/jaiphlang/jaiph-syntax-vscode)
+
 ## Features
 
 - Highlights Jaiph keywords: `import`, `as`, `export`, `rule`, `workflow`, `ensure`, `run`, `prompt`, `if`, `then`, `fi`
@@ -27,4 +30,8 @@ npm install
 npm run package
 ```
 
-You can later move this folder to a standalone repository without changes.
+## Links
+
+- Jaiph language website: [jaiph.org](https://jaiph.org)
+- Extension source: [jaiphlang/jaiph-syntax-vscode](https://github.com/jaiphlang/jaiph-syntax-vscode)
+- Issue tracker: [jaiphlang/jaiph-syntax-vscode/issues](https://github.com/jaiphlang/jaiph-syntax-vscode/issues)
