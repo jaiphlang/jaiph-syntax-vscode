@@ -1,0 +1,57 @@
+{
+  "name": "jaiph-syntax-vscode",
+  "displayName": "Jaiph Syntax",
+  "description": "Syntax highlighting support for Jaiph (.jph) files",
+  "version": "0.0.1",
+  "publisher": "jaiph",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "homepage": "https://jaiph.org",
+  "bugs": {
+    "url": "https://github.com/jaiphlang/jaiph/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jaiphlang/jaiph"
+  },
+  "scripts": {
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.6.0"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "jaiph",
+    "syntax",
+    "highlighting",
+    "language"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "jaiph",
+        "aliases": [
+          "Jaiph",
+          "jaiph"
+        ],
+        "extensions": [
+          ".jph"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "jaiph",
+        "scopeName": "source.jaiph",
+        "path": "./syntaxes/jaiph.tmLanguage.json"
+      }
+    ]
+  }
+}
