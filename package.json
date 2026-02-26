@@ -1,8 +1,8 @@
 {
   "name": "jaiph-syntax-vscode",
   "displayName": "Jaiph Syntax",
-  "description": "Syntax highlighting support for Jaiph (.jph) files",
-  "version": "0.0.2",
+  "description": "Syntax highlighting support for Jaiph (.jph, .jh) files",
+  "version": "0.0.3",
   "publisher": "jaiph",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -41,7 +41,8 @@
           "jaiph"
         ],
         "extensions": [
-          ".jph"
+          ".jph",
+          ".jh"
         ],
         "configuration": "./language-configuration.json"
       }
