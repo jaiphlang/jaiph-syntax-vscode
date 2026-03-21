@@ -5,3 +5,4 @@
 **/*.vsix
 **/*.log
 syntaxes/fixtures/**
+.tmp-jaiph-*/**

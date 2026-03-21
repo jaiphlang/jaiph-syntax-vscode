@@ -2,7 +2,7 @@
   "name": "jaiph-syntax-vscode",
   "displayName": "Jaiph Syntax",
   "description": "Syntax highlighting support for Jaiph (.jph, .jh) files",
-  "version": "0.0.3",
+  "version": "0.4.0",
   "publisher": "jaiph",
   "license": "MIT",
   "icon": "media/icon.png",

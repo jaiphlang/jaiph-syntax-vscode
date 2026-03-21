@@ -2,9 +2,13 @@
   "name": "Jaiph",
   "scopeName": "source.jaiph",
   "fileTypes": [
-    "jph"
+    "jph",
+    "jh"
   ],
   "patterns": [
+    {
+      "include": "#shebang"
+    },
     {
       "include": "#comments"
     },
@@ -15,10 +19,19 @@
       "include": "#declarations"
     },
     {
+      "include": "#local-variable"
+    },
+    {
       "include": "#if-then-fi"
     },
     {
-      "include": "#ensure-run-prompt"
+      "include": "#channels"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#returns-clause"
     },
     {
       "include": "#references"
@@ -34,6 +47,14 @@
     }
   ],
   "repository": {
+    "shebang": {
+      "patterns": [
+        {
+          "name": "comment.line.shebang.jaiph",
+          "match": "\\A#!.*$"
+        }
+      ]
+    },
     "comments": {
       "patterns": [
         {
@@ -66,6 +87,18 @@
     },
     "declarations": {
       "patterns": [
+        {
+          "name": "meta.declaration.config.jaiph",
+          "match": "\\b(config)\\b\\s*(\\{)",
+          "captures": {
+            "1": {
+              "name": "storage.type.config.jaiph"
+            },
+            "2": {
+              "name": "punctuation.section.block.begin.jaiph"
+            }
+          }
+        },
         {
           "name": "meta.declaration.rule.jaiph",
           "match": "\\b(export)\\b\\s+\\b(rule)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(\\{)",
@@ -131,6 +164,55 @@
               "name": "punctuation.section.block.begin.jaiph"
             }
           }
+        },
+        {
+          "name": "meta.declaration.function.jaiph",
+          "match": "\\b(function)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(?:\\(\\)\\s*)?(\\{)",
+          "captures": {
+            "1": {
+              "name": "storage.type.function.jaiph"
+            },
+            "2": {
+              "name": "entity.name.function.jaiph"
+            },
+            "3": {
+              "name": "punctuation.section.block.begin.jaiph"
+            }
+          }
+        },
+        {
+          "name": "meta.declaration.test.jaiph",
+          "match": "\\b(test)\\b\\s+(\"(?:\\\\.|[^\"\\\\])*\")\\s*(\\{)",
+          "captures": {
+            "1": {
+              "name": "storage.type.test.jaiph"
+            },
+            "2": {
+              "name": "string.quoted.double.jaiph"
+            },
+            "3": {
+              "name": "punctuation.section.block.begin.jaiph"
+            }
+          }
+        }
+      ]
+    },
+    "local-variable": {
+      "patterns": [
+        {
+          "name": "meta.local.jaiph",
+          "match": "\\b(local)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(=)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.local.jaiph"
+            },
+            "2": {
+              "name": "variable.other.local.jaiph"
+            },
+            "3": {
+              "name": "keyword.operator.assignment.jaiph"
+            }
+          }
         }
       ]
     },
@@ -138,15 +220,70 @@
       "patterns": [
         {
           "name": "keyword.control.conditional.jaiph",
-          "match": "\\b(if|then|fi)\\b"
+          "match": "\\b(if|then|else|elif|fi)\\b"
         }
       ]
     },
-    "ensure-run-prompt": {
+    "channels": {
+      "patterns": [
+        {
+          "name": "meta.send.jaiph",
+          "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(<-)",
+          "captures": {
+            "1": {
+              "name": "entity.name.channel.jaiph"
+            },
+            "2": {
+              "name": "keyword.operator.send.jaiph"
+            }
+          }
+        },
+        {
+          "name": "meta.route.jaiph",
+          "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(->)\\s+(.+)$",
+          "captures": {
+            "1": {
+              "name": "entity.name.channel.jaiph"
+            },
+            "2": {
+              "name": "keyword.operator.route.jaiph"
+            },
+            "3": {
+              "name": "variable.other.member.jaiph"
+            }
+          }
+        }
+      ]
+    },
+    "keywords": {
       "patterns": [
         {
           "name": "keyword.control.command.jaiph",
-          "match": "\\b(ensure|run|prompt)\\b"
+          "match": "\\b(ensure|run|prompt|log|logerr|recover)\\b"
+        },
+        {
+          "name": "keyword.control.test.jaiph",
+          "match": "\\b(mock|respond|contains|allow_failure)\\b"
+        },
+        {
+          "name": "keyword.other.assertion.jaiph",
+          "match": "\\b(expectContain|expectNotContain|expectEqual)\\b"
+        }
+      ]
+    },
+    "returns-clause": {
+      "patterns": [
+        {
+          "name": "meta.returns.jaiph",
+          "match": "\\b(returns)\\b\\s*('(?:\\\\.|[^'\\\\])*')",
+          "captures": {
+            "1": {
+              "name": "keyword.control.returns.jaiph"
+            },
+            "2": {
+              "name": "string.quoted.single.schema.jaiph"
+            }
+          }
         }
       ]
     },
@@ -222,6 +359,10 @@
           "match": "!"
         },
         {
+          "name": "keyword.operator.assignment.jaiph",
+          "match": "(?<![<>!])=(?!=)"
+        },
+        {
           "name": "punctuation.terminator.statement.jaiph",
           "match": ";"
         },
@@ -239,7 +380,7 @@
       "patterns": [
         {
           "name": "meta.shell.command.jaiph",
-          "begin": "^(?!\\s*(?:#|import\\b|export\\s+(?:rule|workflow)\\b|rule\\b|workflow\\b|if\\b|then\\b|fi\\b|ensure\\b|run\\b|prompt\\b|\\{|\\}|$))(\\s*)",
+          "begin": "^(?!\\s*(?:#|import\\b|export\\s+(?:rule|workflow)\\b|config\\b|rule\\b|workflow\\b|function\\b|test\\b|local\\b|if\\b|then\\b|else\\b|elif\\b|fi\\b|ensure\\b|run\\b|prompt\\b|log\\b|logerr\\b|recover\\b|mock\\b|respond\\b|returns\\b|expectContain\\b|expectNotContain\\b|expectEqual\\b|\\{|\\}|$))(\\s*)",
           "beginCaptures": {
             "1": {
               "name": "punctuation.whitespace.leading.jaiph"
