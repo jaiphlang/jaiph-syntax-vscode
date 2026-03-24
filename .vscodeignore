@@ -4,5 +4,7 @@
 **/node_modules/**
 **/*.vsix
 **/*.log
+src/**
 syntaxes/fixtures/**
+tsconfig.json
 .tmp-jaiph-*/**
