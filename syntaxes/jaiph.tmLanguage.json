@@ -16,13 +16,22 @@
       "include": "#import-statement"
     },
     {
+      "include": "#script-block"
+    },
+    {
       "include": "#declarations"
     },
     {
-      "include": "#local-variable"
+      "include": "#variable-declaration"
     },
     {
-      "include": "#if-then-fi"
+      "include": "#channel-declaration"
+    },
+    {
+      "include": "#config-keys"
+    },
+    {
+      "include": "#conditionals"
     },
     {
       "include": "#channels"
@@ -34,6 +43,9 @@
       "include": "#returns-clause"
     },
     {
+      "include": "#constants"
+    },
+    {
       "include": "#references"
     },
     {
@@ -41,9 +53,6 @@
     },
     {
       "include": "#operators"
-    },
-    {
-      "include": "#shell-fallback"
     }
   ],
   "repository": {
@@ -67,13 +76,13 @@
       "patterns": [
         {
           "name": "meta.import.jaiph",
-          "match": "\\b(import)\\b\\s+(\"(?:\\\\.|[^\"\\\\])*\")\\s+\\b(as)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "match": "\\b(import)\\b\\s+(\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*')\\s+\\b(as)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
               "name": "keyword.control.import.jaiph"
             },
             "2": {
-              "name": "string.quoted.double.jaiph"
+              "name": "string.quoted.jaiph"
             },
             "3": {
               "name": "keyword.control.import.jaiph"
@@ -82,6 +91,67 @@
               "name": "entity.name.namespace.jaiph"
             }
           }
+        }
+      ]
+    },
+    "script-block": {
+      "patterns": [
+        {
+          "name": "meta.declaration.script.jaiph",
+          "begin": "^\\s*\\b(script)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(\\{)\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "storage.type.script.jaiph"
+            },
+            "2": {
+              "name": "entity.name.function.script.jaiph"
+            },
+            "3": {
+              "name": "punctuation.section.block.begin.jaiph"
+            }
+          },
+          "end": "^(\\})",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.section.block.end.jaiph"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#comments"
+            },
+            {
+              "include": "source.shell"
+            }
+          ]
+        }
+      ]
+    },
+    "config-keys": {
+      "patterns": [
+        {
+          "name": "meta.config.key-value.jaiph",
+          "match": "\\b(agent\\.default_model|agent\\.command|agent\\.backend|agent\\.trusted_workspace|agent\\.cursor_flags|agent\\.claude_flags|run\\.logs_dir|run\\.debug|run\\.inbox_parallel|runtime\\.docker_enabled|runtime\\.docker_image|runtime\\.docker_network|runtime\\.docker_timeout|runtime\\.workspace)\\b\\s*(=)",
+          "captures": {
+            "1": {
+              "name": "variable.other.property.jaiph"
+            },
+            "2": {
+              "name": "keyword.operator.assignment.jaiph"
+            }
+          }
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.jaiph",
+          "match": "\\b(true|false)\\b"
+        },
+        {
+          "name": "constant.numeric.integer.jaiph",
+          "match": "\\b([0-9]+)\\b"
         }
       ]
     },
@@ -166,21 +236,6 @@
           }
         },
         {
-          "name": "meta.declaration.function.jaiph",
-          "match": "\\b(function)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(?:\\(\\)\\s*)?(\\{)",
-          "captures": {
-            "1": {
-              "name": "storage.type.function.jaiph"
-            },
-            "2": {
-              "name": "entity.name.function.jaiph"
-            },
-            "3": {
-              "name": "punctuation.section.block.begin.jaiph"
-            }
-          }
-        },
-        {
           "name": "meta.declaration.test.jaiph",
           "match": "\\b(test)\\b\\s+(\"(?:\\\\.|[^\"\\\\])*\")\\s*(\\{)",
           "captures": {
@@ -197,17 +252,17 @@
         }
       ]
     },
-    "local-variable": {
+    "variable-declaration": {
       "patterns": [
         {
-          "name": "meta.local.jaiph",
-          "match": "\\b(local)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(=)",
+          "name": "meta.variable.jaiph",
+          "match": "\\b(const)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(=)",
           "captures": {
             "1": {
-              "name": "storage.modifier.local.jaiph"
+              "name": "storage.modifier.jaiph"
             },
             "2": {
-              "name": "variable.other.local.jaiph"
+              "name": "variable.other.jaiph"
             },
             "3": {
               "name": "keyword.operator.assignment.jaiph"
@@ -216,16 +271,50 @@
         }
       ]
     },
-    "if-then-fi": {
+    "channel-declaration": {
+      "patterns": [
+        {
+          "name": "meta.channel.declaration.jaiph",
+          "match": "^\\s*\\b(channel)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*$",
+          "captures": {
+            "1": {
+              "name": "storage.type.channel.jaiph"
+            },
+            "2": {
+              "name": "variable.other.channel.jaiph"
+            }
+          }
+        }
+      ]
+    },
+    "conditionals": {
       "patterns": [
         {
           "name": "keyword.control.conditional.jaiph",
-          "match": "\\b(if|then|else|elif|fi)\\b"
+          "match": "\\b(if|else\\s+if|else|not)\\b"
+        },
+        {
+          "comment": "bash-style conditionals used in test mock blocks",
+          "name": "keyword.control.conditional.jaiph",
+          "match": "\\b(then|elif|fi)\\b"
         }
       ]
     },
     "channels": {
       "patterns": [
+        {
+          "comment": "inbox forward: inbox <- (sends ${arg1})",
+          "name": "meta.send.inbox.jaiph",
+          "match": "^\\s*\\b(inbox)\\b\\s*(<-)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.inbox.jaiph"
+            },
+            "2": {
+              "name": "keyword.operator.send.jaiph"
+            }
+          }
+        },
         {
           "name": "meta.send.jaiph",
           "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(<-)",
@@ -259,7 +348,19 @@
       "patterns": [
         {
           "name": "keyword.control.command.jaiph",
-          "match": "\\b(ensure|run|prompt|log|logerr|recover)\\b"
+          "match": "\\b(ensure|run|prompt|log|logerr|recover|fail|return|wait)\\b"
+        },
+        {
+          "name": "keyword.control.async.jaiph",
+          "match": "\\b(run)\\b\\s+\\b(async)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.control.command.jaiph"
+            },
+            "2": {
+              "name": "keyword.control.async.jaiph"
+            }
+          }
         },
         {
           "name": "keyword.control.test.jaiph",
@@ -268,6 +369,10 @@
         {
           "name": "keyword.other.assertion.jaiph",
           "match": "\\b(expectContain|expectNotContain|expectEqual)\\b"
+        },
+        {
+          "name": "storage.modifier.jaiph",
+          "match": "\\b(export)\\b"
         }
       ]
     },
@@ -275,13 +380,13 @@
       "patterns": [
         {
           "name": "meta.returns.jaiph",
-          "match": "\\b(returns)\\b\\s*('(?:\\\\.|[^'\\\\])*')",
+          "match": "\\b(returns)\\b\\s*('(?:\\\\.|[^'\\\\])*'|\"(?:\\\\.|[^\"\\\\])*\")",
           "captures": {
             "1": {
               "name": "keyword.control.returns.jaiph"
             },
             "2": {
-              "name": "string.quoted.single.schema.jaiph"
+              "name": "string.quoted.schema.jaiph"
             }
           }
         }
@@ -326,6 +431,41 @@
             {
               "name": "constant.character.escape.jaiph",
               "match": "\\\\."
+            },
+            {
+              "comment": "Inline capture interpolation: ${run ref()} or ${ensure ref()}",
+              "name": "meta.interpolation.capture.jaiph",
+              "match": "(\\$\\{)\\s*(run|ensure)\\s+([A-Za-z_][A-Za-z0-9_.]*\\([^)]*\\))\\s*(\\})",
+              "captures": {
+                "1": {
+                  "name": "punctuation.definition.interpolation.begin.jaiph"
+                },
+                "2": {
+                  "name": "keyword.control.command.jaiph"
+                },
+                "3": {
+                  "name": "entity.name.function.jaiph"
+                },
+                "4": {
+                  "name": "punctuation.definition.interpolation.end.jaiph"
+                }
+              }
+            },
+            {
+              "comment": "Variable interpolation: ${varName}",
+              "name": "meta.interpolation.variable.jaiph",
+              "match": "(\\$\\{)([A-Za-z_][A-Za-z0-9_]*)(\\})",
+              "captures": {
+                "1": {
+                  "name": "punctuation.definition.interpolation.begin.jaiph"
+                },
+                "2": {
+                  "name": "variable.other.interpolated.jaiph"
+                },
+                "3": {
+                  "name": "punctuation.definition.interpolation.end.jaiph"
+                }
+              }
             }
           ]
         },
@@ -355,10 +495,6 @@
     "operators": {
       "patterns": [
         {
-          "name": "keyword.operator.logical.not.jaiph",
-          "match": "!"
-        },
-        {
           "name": "keyword.operator.assignment.jaiph",
           "match": "(?<![<>!])=(?!=)"
         },
@@ -373,25 +509,6 @@
         {
           "name": "punctuation.section.block.end.jaiph",
           "match": "\\}"
-        }
-      ]
-    },
-    "shell-fallback": {
-      "patterns": [
-        {
-          "name": "meta.shell.command.jaiph",
-          "begin": "^(?!\\s*(?:#|import\\b|export\\s+(?:rule|workflow)\\b|config\\b|rule\\b|workflow\\b|function\\b|test\\b|local\\b|if\\b|then\\b|else\\b|elif\\b|fi\\b|ensure\\b|run\\b|prompt\\b|log\\b|logerr\\b|recover\\b|mock\\b|respond\\b|returns\\b|expectContain\\b|expectNotContain\\b|expectEqual\\b|\\{|\\}|$))(\\s*)",
-          "beginCaptures": {
-            "1": {
-              "name": "punctuation.whitespace.leading.jaiph"
-            }
-          },
-          "end": "$",
-          "patterns": [
-            {
-              "include": "source.shell"
-            }
-          ]
         }
       ]
     }

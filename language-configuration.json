@@ -62,8 +62,12 @@
   ],
   "folding": {
     "markers": {
-      "start": "^\\s*(rule|workflow)\\b.*\\{\\s*$",
+      "start": "^\\s*(config|rule|workflow|script|test|if|else)\\b.*\\{\\s*$",
       "end": "^\\s*\\}\\s*$"
     }
+  },
+  "indentationRules": {
+    "increaseIndentPattern": "\\{\\s*$",
+    "decreaseIndentPattern": "^\\s*\\}"
   }
 }

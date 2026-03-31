@@ -1,0 +1,105 @@
+#!/usr/bin/env jaiph
+
+#
+# Run from the VS Code extension repo root (git root = plugin source).
+# Usage: jaiph path/to/this.jh <branch>
+#
+# 1. Shallow-clone jaiph (no full history) → tmp/jaiph-<sanitized-branch>
+# 2. Prompt: update grammar, syntax, and extension code vs the cloned tree
+# 3. Set package.json "version" to match jaiph's package.json
+# 4. npm install + npm run package (vsce → .vsix)
+#
+
+config {
+  agent.backend = "claude"
+  agent.claude_flags = "--permission-mode bypassPermissions"
+}
+
+script arg_nonempty {
+  [ -n "${1:-}" ]
+}
+
+script branch_safe_name {
+  local b="$1"
+  printf '%s\n' "$b" | tr '/:' '--'
+}
+
+script clone_jaiph_shallow {
+  local branch="$1"
+  local safe dest
+  safe="$(printf '%s\n' "$branch" | tr '/:' '--')"
+  dest="tmp/jaiph-${safe}"
+  rm -rf "$dest"
+  mkdir -p tmp
+  git clone --depth 1 --branch "$branch" \
+    https://github.com/jaiphlang/jaiph.git "$dest" || return 1
+  printf '%s\n' "$dest"
+}
+
+script sync_plugin_version_from_jaiph_dir {
+  local jaiph_dir="$1"
+  local ver
+  ver="$(node -e "console.log(require('./${jaiph_dir}/package.json').version)")" || return 1
+  node -e "
+const fs = require('fs');
+const v = process.argv[1];
+const p = 'package.json';
+const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+j.version = v;
+fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n');
+  " "$ver" || return 1
+  printf '%s\n' "$ver"
+}
+
+script pack_extension {
+  npm install --no-audit --no-fund && npm run package
+}
+
+workflow default {
+  const branch = "${arg1}"
+  if not run arg_nonempty("${branch}") {
+    fail "usage: jaiph <this-file>.jh <branch>"
+  }
+
+  const jaiph_dir = run clone_jaiph_shallow("${branch}")
+  const safe_branch = run branch_safe_name("${branch}")
+
+  prompt "
+    <context>
+    You are updating the **jaiph-syntax-vscode** extension (Jaiph language
+    support for VS Code). The current working directory is the extension
+    repository; treat the git root as the plugin source of truth.
+
+    A shallow clone of the upstream **jaiph** compiler repo (branch: ${branch})
+    is available at:
+
+      ${jaiph_dir}/
+
+    Use it to understand language changes, grammar documentation, and any
+    diagnostics-related behavior. Do **not** treat the clone as the place to
+    edit the extension — only change files in this repo (the extension).
+    </context>
+
+    <task>
+    1. Read ${jaiph_dir}/docs/grammar.md and scan relevant compiler sources
+       under ${jaiph_dir}/src/ if needed for semantics (keywords, constructs).
+    2. Update the extension so it stays aligned with the language:
+       - syntaxes/jaiph.tmLanguage.json (TextMate grammar)
+       - language-configuration.json if needed
+       - src/extension.ts (compiler path, diagnostics, activation, etc.)
+    3. Keep contributes.languages / grammars / configuration in package.json
+       consistent with the above.
+    4. Run npm run compile (or your usual compile) and fix issues until the
+       extension builds and behaves as you expect.
+
+    Focus on parity with the current Jaiph grammar and compiler behavior for
+    this branch.
+    </task>
+  "
+
+  const new_version = run sync_plugin_version_from_jaiph_dir("${jaiph_dir}")
+  log "package.json version set to ${new_version} (from ${jaiph_dir}/package.json)"
+
+  run pack_extension()
+  log "Done. Look for a .vsix in the project root (vsce output)."
+}
