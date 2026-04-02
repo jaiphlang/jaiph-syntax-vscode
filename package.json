@@ -2,7 +2,7 @@
   "name": "jaiph-syntax-vscode",
   "displayName": "Jaiph Syntax",
   "description": "Syntax highlighting and compiler diagnostics for the Jaiph orchestration language (.jh files)",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "publisher": "jaiph",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -51,7 +51,6 @@
           "jaiph"
         ],
         "extensions": [
-          ".jph",
           ".jh"
         ],
         "configuration": "./language-configuration.json"
@@ -61,7 +60,43 @@
       {
         "language": "jaiph",
         "scopeName": "source.jaiph",
-        "path": "./syntaxes/jaiph.tmLanguage.json"
+        "path": "./syntaxes/jaiph.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.shell.jaiph": "shellscript",
+          "meta.embedded.block.python.jaiph": "python",
+          "meta.embedded.block.javascript.jaiph": "javascript",
+          "meta.embedded.block.markdown.jaiph": "markdown"
+        }
+      },
+      {
+        "scopeName": "source.jaiph.embedded.python",
+        "path": "./syntaxes/jaiph-python-injection.tmLanguage.json",
+        "injectTo": [
+          "source.jaiph"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.python.jaiph": "python"
+        }
+      },
+      {
+        "scopeName": "source.jaiph.embedded.javascript",
+        "path": "./syntaxes/jaiph-javascript-injection.tmLanguage.json",
+        "injectTo": [
+          "source.jaiph"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.javascript.jaiph": "javascript"
+        }
+      },
+      {
+        "scopeName": "source.jaiph.embedded.markdown",
+        "path": "./syntaxes/jaiph-markdown-injection.tmLanguage.json",
+        "injectTo": [
+          "source.jaiph"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.markdown.jaiph": "markdown"
+        }
       }
     ],
     "configuration": {

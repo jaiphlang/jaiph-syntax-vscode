@@ -15,16 +15,11 @@ config {
   agent.claude_flags = "--permission-mode bypassPermissions"
 }
 
-script arg_nonempty {
-  [ -n "${1:-}" ]
-}
+script arg_nonempty = "[ -n \"${1:-}\" ]"
 
-script branch_safe_name {
-  local b="$1"
-  printf '%s\n' "$b" | tr '/:' '--'
-}
+script branch_safe_name = "printf '%s\n' \"$1\" | tr '/:' '--'"
 
-script clone_jaiph_shallow {
+script clone_jaiph_shallow = ```
   local branch="$1"
   local safe dest
   safe="$(printf '%s\n' "$branch" | tr '/:' '--')"
@@ -34,9 +29,9 @@ script clone_jaiph_shallow {
   git clone --depth 1 --branch "$branch" \
     https://github.com/jaiphlang/jaiph.git "$dest" || return 1
   printf '%s\n' "$dest"
-}
+```
 
-script sync_plugin_version_from_jaiph_dir {
+script sync_plugin_version_from_jaiph_dir = ```
   local jaiph_dir="$1"
   local ver
   ver="$(node -e "console.log(require('./${jaiph_dir}/package.json').version)")" || return 1
@@ -49,22 +44,21 @@ j.version = v;
 fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n');
   " "$ver" || return 1
   printf '%s\n' "$ver"
-}
+```
 
-script pack_extension {
+script pack_extension = ```
   npm install --no-audit --no-fund && npm run package
-}
+```
 
-workflow default {
-  const branch = "${arg1}"
-  if not run arg_nonempty("${branch}") {
+workflow default(branch) {
+  if not run arg_nonempty(branch) {
     fail "usage: jaiph <this-file>.jh <branch>"
   }
 
-  const jaiph_dir = run clone_jaiph_shallow("${branch}")
-  const safe_branch = run branch_safe_name("${branch}")
+  const jaiph_dir = run clone_jaiph_shallow(branch)
+  const safe_branch = run branch_safe_name(branch)
 
-  prompt "
+  prompt ```
     <context>
     You are updating the **jaiph-syntax-vscode** extension (Jaiph language
     support for VS Code). The current working directory is the extension
@@ -91,13 +85,17 @@ workflow default {
        consistent with the above.
     4. Run npm run compile (or your usual compile) and fix issues until the
        extension builds and behaves as you expect.
+    5. Assume script code provided in fences by deafult requires shell highlighting
+       and when we provide python or python3, then it should use python highlighting,
+       for node it's JavaScript highlighting, etc. Fenced prompts should use the
+       markdown highlighting. Use Injection Grammars (TextMate) to achieve this.
 
     Focus on parity with the current Jaiph grammar and compiler behavior for
     this branch.
     </task>
-  "
+  ```
 
-  const new_version = run sync_plugin_version_from_jaiph_dir("${jaiph_dir}")
+  const new_version = run sync_plugin_version_from_jaiph_dir(jaiph_dir)
   log "package.json version set to ${new_version} (from ${jaiph_dir}/package.json)"
 
   run pack_extension()
