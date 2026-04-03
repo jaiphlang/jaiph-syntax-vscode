@@ -1,37 +1,190 @@
-import "security.jph" as security
-import "bootstrap_project.jph" as bootstrap
+#!/usr/bin/env jaiph
 
-# Validates local build prerequisites.
-rule project_ready {
-  test -f "package.json"
-  test -n "$NODE_ENV"
+import "security.jh" as security
+import "bootstrap.jh" as bootstrap
+
+# Top-level configuration
+config {
+  agent.backend = "claude"
+  agent.default_model = "claude-sonnet"
+  run.debug = false
+  runtime.docker_enabled = true
+  runtime.docker_image = "node:20"
 }
 
-# Verifies the project compiles successfully.
-rule build_passes {
-  npm run build
+# Top-level constants
+const REPO = "my-project"
+const MAX_RETRIES = 3
+const GREETING = """
+Hello,
+welcome to the project.
+"""
+
+# Channel declarations
+channel alerts
+channel reports -> analyst
+channel findings -> handler_a, handler_b
+
+# Named scripts — single-line backtick
+script check_file = `test -f "$1"`
+script greet = `echo "Hello $1"`
+
+# Named scripts — fenced shell (default)
+script setup_env = ```
+export BASE_DIR=$(pwd)
+mkdir -p "$BASE_DIR/output"
+echo "Environment initialized"
+```
+
+# Named scripts — fenced Python
+script analyze = ```python3
+import sys
+print(f"Analyzing {sys.argv[1]}")
+```
+
+# Named scripts — fenced Node/JS
+script transform = ```node
+const data = process.argv[2];
+console.log(JSON.stringify({ result: data }));
+```
+
+# Rule with named parameters
+rule check_deps(path) {
+  run check_file(path)
+  log "Checked: ${path}"
 }
 
-# Orchestrates checks, prompt execution, and docs refresh.
-# Arguments:
-#   $1: Feature requirements passed to the prompt.
-workflow main {
-  if ! ensure project_ready; then
+# Exported rule
+export rule validate_all() {
+  ensure check_deps("package.json")
+  run setup_env
+  const status = run greet(REPO)
+  log status
+
+  if not run check_file(".env") {
+    fail "Missing .env file"
+  }
+
+  match status {
+    "ok" => "all good"
+    /err/ => "something went wrong"
+    _ => "unknown"
+  }
+
+  return "${status}"
+}
+
+# Workflow with config override, conditionals, channels
+export workflow default(task, role) {
+  config {
+    agent.default_model = "claude-opus"
+  }
+
+  if ensure check_deps("package.json") {
+    log "Dependencies OK"
+  } else if not run check_file("yarn.lock") {
     run bootstrap.nodejs
-  fi
-  
-  prompt "
-    Build the application using best practices.
-    Follow requirements: $1
-  "
-  
-  ensure build_passes
-  ensure security.scan_passes
+  } else {
+    log "Skipping"
+  }
 
-  run update_docs
+  ensure validate_all() recover {
+    log "Validation failed, retrying..."
+    run setup_env
+  }
+
+  # Prompt — single-line
+  prompt "Review the code for security issues"
+  answer = prompt "Summarize the report" returns "{ type: string, risk: string }"
+  log "Risk: ${answer.risk}"
+
+  # Prompt — bare identifier
+  const text = "Analyze this code"
+  const reply = prompt text returns "{ summary: string }"
+  log "Summary: ${reply.summary}"
+
+  # Prompt — triple-quoted multiline
+  const analysis = prompt """
+    You are a helpful assistant.
+    Analyze the following: ${task}
+    Role: ${role}
+  """
+
+  # Inline captures in strings
+  log "Got: ${run greet(REPO)}"
+  log "Status: ${ensure check_deps("package.json")}"
+
+  # Inline script — single-line backtick
+  run `echo hello`()
+  const ts = run `date +%s`()
+  x = run `echo $1-$2`("hello", "world")
+
+  # Inline script — fenced shell
+  run ```
+echo "line one"
+echo "line two"
+```()
+
+  # Inline script — fenced python
+  const py_result = run ```python3
+import sys
+print(f"args: {sys.argv[1:]}")
+```("arg1", "arg2")
+
+  # Inline script — fenced node
+  run ```node
+console.log("from node");
+```()
+
+  # Async execution
+  run async security.scan_passes()
+  run async bootstrap.nodejs()
+
+  # Channel send
+  alerts <- "Build started"
+  reports <- ${analysis}
+  findings <- run greet(REPO)
+  alerts <- """
+    Build report for ${REPO}:
+    Status: complete
+  """
+
+  # Log with bare identifier and triple-quoted
+  log analysis
+  logerr "Warning: check failed"
+  log """
+    Multi-line log
+    for ${REPO}
+  """
+
+  # Const with triple-quoted
+  const msg = """
+    Hello ${task},
+    Welcome.
+  """
+
+  # Fail with triple-quoted
+  if not ensure validate_all() {
+    fail """
+      Multiple issues found:
+      - missing deps
+      - invalid config
+    """
+  }
+
+  # Return forms
+  return "${analysis}"
 }
 
-# Refreshes documentation after a successful build.
-workflow update_docs {
-  prompt "Update docs"
+# Test block
+test "validate workflow" {
+  mock security.scan_passes
+  respond "ok"
+  allow_failure
+
+  run default("build docs", "writer")
+
+  expectContain "complete"
+  expectNotContain "error"
+  expectEqual answer "expected"
 }

@@ -146,3 +146,4 @@ vite.config.ts.timestamp-*
 
 # Jaiph
 .jaiph/runs
+tmp/

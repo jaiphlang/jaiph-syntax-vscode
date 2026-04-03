@@ -8,3 +8,4 @@ src/**
 syntaxes/fixtures/**
 tsconfig.json
 .tmp-jaiph-*/**
+tmp/**
