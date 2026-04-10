@@ -16,7 +16,9 @@
     { "include": "#variable-declaration" },
     { "include": "#channel-declaration" },
     { "include": "#config-keys" },
+    { "include": "#if-statement" },
     { "include": "#conditionals" },
+    { "include": "#recover-bindings" },
     { "include": "#channels" },
     { "include": "#match-patterns" },
     { "include": "#keywords" },
@@ -720,11 +722,56 @@
       ]
     },
 
+    "if-statement": {
+      "patterns": [
+        {
+          "comment": "else if varName op operand {",
+          "name": "meta.conditional.elseif.jaiph",
+          "match": "\\b(else\\s+if)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(==|!=|=~|!~)\\s*(?:(\"(?:\\\\.|[^\"\\\\])*\")|(/[^/]+/))",
+          "captures": {
+            "1": { "name": "keyword.control.conditional.jaiph" },
+            "2": { "name": "variable.other.jaiph" },
+            "3": { "name": "keyword.operator.comparison.jaiph" },
+            "4": { "name": "string.quoted.double.jaiph" },
+            "5": { "name": "string.regexp.jaiph" }
+          }
+        },
+        {
+          "comment": "if varName op operand {",
+          "name": "meta.conditional.if.jaiph",
+          "match": "\\b(if)\\b\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(==|!=|=~|!~)\\s*(?:(\"(?:\\\\.|[^\"\\\\])*\")|(/[^/]+/))",
+          "captures": {
+            "1": { "name": "keyword.control.conditional.jaiph" },
+            "2": { "name": "variable.other.jaiph" },
+            "3": { "name": "keyword.operator.comparison.jaiph" },
+            "4": { "name": "string.quoted.double.jaiph" },
+            "5": { "name": "string.regexp.jaiph" }
+          }
+        }
+      ]
+    },
+
     "conditionals": {
       "patterns": [
         {
           "name": "keyword.control.conditional.jaiph",
-          "match": "\\b(if|else\\s+if|else|not)\\b"
+          "match": "\\b(if|else\\s+if|else)\\b"
+        }
+      ]
+    },
+
+    "recover-bindings": {
+      "patterns": [
+        {
+          "comment": "recover (binding) - failure recovery with binding",
+          "name": "meta.recover.jaiph",
+          "match": "\\b(recover)\\b\\s*(\\()([A-Za-z_][A-Za-z0-9_]*)(\\))",
+          "captures": {
+            "1": { "name": "keyword.control.command.jaiph" },
+            "2": { "name": "punctuation.section.parens.begin.jaiph" },
+            "3": { "name": "variable.parameter.jaiph" },
+            "4": { "name": "punctuation.section.parens.end.jaiph" }
+          }
         }
       ]
     },
@@ -932,8 +979,12 @@
     "operators": {
       "patterns": [
         {
+          "name": "keyword.operator.comparison.jaiph",
+          "match": "==|!=|=~|!~"
+        },
+        {
           "name": "keyword.operator.assignment.jaiph",
-          "match": "(?<![<>=!])=(?![>=])"
+          "match": "(?<![<>=!])=(?![>=~])"
         },
         {
           "name": "punctuation.section.block.begin.jaiph",

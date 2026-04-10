@@ -72,7 +72,6 @@ workflow default(branch_param) {
   const jaiph_dir = run clone_jaiph_shallow(safe_branch)
 
   prompt """
-    ## sasa
     <context>
     1. Read ${jaiph_dir}/docs/grammar.md and scan relevant compiler sources
        under ${jaiph_dir}/src/ if needed for semantics (keywords, constructs).

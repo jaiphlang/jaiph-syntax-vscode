@@ -51,19 +51,16 @@ console.log(JSON.stringify({ result: data }));
 # Rule with named parameters
 rule check_deps(path) {
   run check_file(path)
+  return "${path}"
   log "Checked: ${path}"
 }
 
 # Exported rule
 export rule validate_all() {
   ensure check_deps("package.json")
-  run setup_env
-  const status = run greet(REPO)
-  log status
-
-  if not run check_file(".env") {
-    fail "Missing .env file"
-  }
+  run setup_env()
+  const result = run greet(REPO)
+  log result
 
   match status {
     "ok" => "all good"
@@ -80,18 +77,37 @@ export workflow default(task, role) {
     agent.default_model = "claude-opus"
   }
 
-  if ensure check_deps("package.json") {
+  # If with comparison operators
+  const status = run greet(REPO)
+  if status == "ok" {
     log "Dependencies OK"
-  } else if not run check_file("yarn.lock") {
-    run bootstrap.nodejs
+  } else if status != "error" {
+    run bootstrap.nodejs()
   } else {
     log "Skipping"
   }
 
-  ensure validate_all() recover {
-    log "Validation failed, retrying..."
-    run setup_env
+  # If with regex match operators
+  if status =~ /^success/ {
+    log "Matched success"
+  } else if status !~ /fail/ {
+    log "No failure found"
   }
+
+  # Ensure with recover bindings
+  ensure validate_all() recover (failure) {
+    log "Validation failed: ${failure}"
+    run setup_env()
+  }
+
+  # Run with recover bindings
+  run setup_env() recover (err) {
+    log "Setup failed: ${err}"
+    run bootstrap.nodejs()
+  }
+
+  # Single-statement recover
+  ensure check_deps("package.json") recover (failure) run setup_env()
 
   # Prompt — single-line
   prompt "Review the code for security issues"
@@ -164,16 +180,27 @@ console.log("from node");
   """
 
   # Fail with triple-quoted
-  if not ensure validate_all() {
-    fail """
-      Multiple issues found:
-      - missing deps
-      - invalid config
-    """
-  }
+  fail """
+    Multiple issues found:
+    - missing deps
+    - invalid config
+  """
 
   # Return forms
   return "${analysis}"
+  return run greet(REPO)
+  return ensure check_deps("package.json")
+  return match status {
+    "ok" => "pass"
+    _ => "fail"
+  }
+
+  # Const with match expression
+  const label = match status {
+    "ok" => "success"
+    /err/ => "error"
+    _ => "unknown"
+  }
 }
 
 # Test block
