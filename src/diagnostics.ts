@@ -1,12 +1,7 @@
 import * as vscode from "vscode";
 import { execFile } from "child_process";
-import { tmpdir } from "os";
-import { join } from "path";
-import { mkdtemp, rm } from "fs/promises";
 
-const ERROR_RE = /^(.+?):(\d+):(\d+)\s+(E_\w+)\s+(.+)$/;
-
-interface ParsedError {
+interface CompileDiagnostic {
   file: string;
   line: number;
   col: number;
@@ -14,24 +9,7 @@ interface ParsedError {
   message: string;
 }
 
-function parseErrors(stderr: string): ParsedError[] {
-  const errors: ParsedError[] = [];
-  for (const line of stderr.split("\n")) {
-    const m = line.match(ERROR_RE);
-    if (m) {
-      errors.push({
-        file: m[1],
-        line: parseInt(m[2], 10),
-        col: parseInt(m[3], 10),
-        code: m[4],
-        message: m[5],
-      });
-    }
-  }
-  return errors;
-}
-
-function toDiagnostic(err: ParsedError): vscode.Diagnostic {
+function toDiagnostic(err: CompileDiagnostic): vscode.Diagnostic {
   const line = Math.max(0, err.line - 1);
   const col = Math.max(0, err.col - 1);
   const range = new vscode.Range(line, col, line, col + 1);
@@ -52,21 +30,24 @@ export async function runDiagnostics(
   const filePath = document.uri.fsPath;
   const cwd = vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath;
 
-  let targetDir: string | undefined;
   try {
-    targetDir = await mkdtemp(join(tmpdir(), "jaiph-check-"));
-    const stderr = await new Promise<string>((resolve, reject) => {
+    const stdout = await new Promise<string>((resolve, reject) => {
       execFile(
         compilerPath,
-        ["build", "--target", targetDir!, filePath],
+        ["compile", "--json", filePath],
         { cwd, timeout: 15_000 },
-        (_error, _stdout, stderr) => {
-          resolve(stderr);
+        (error, stdout, stderr) => {
+          // compile exits non-zero on errors but still prints JSON to stdout
+          if (stdout) {
+            resolve(stdout);
+          } else {
+            reject(error ?? new Error(stderr));
+          }
         },
       );
     });
 
-    const errors = parseErrors(stderr);
+    const errors: CompileDiagnostic[] = JSON.parse(stdout);
     const byFile = new Map<string, vscode.Diagnostic[]>();
 
     for (const err of errors) {
@@ -75,21 +56,15 @@ export async function runDiagnostics(
       byFile.get(uri)!.push(toDiagnostic(err));
     }
 
-    // Clear previous diagnostics, then set new ones per file
     collection.clear();
     for (const [uriStr, diags] of byFile) {
       collection.set(vscode.Uri.parse(uriStr), diags);
     }
 
-    // If no errors, clear explicitly for the current file
     if (errors.length === 0) {
       collection.delete(document.uri);
     }
   } catch {
     // Compiler not found or crashed — silently ignore
-  } finally {
-    if (targetDir) {
-      rm(targetDir, { recursive: true, force: true }).catch(() => {});
-    }
   }
 }

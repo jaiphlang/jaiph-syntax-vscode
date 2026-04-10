@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { runDiagnostics } from "./diagnostics";
+import { JaiphFormattingProvider } from "./formatting";
 
 const LANGUAGE_ID = "jaiph";
 
@@ -31,6 +32,15 @@ export function activate(context: vscode.ExtensionContext): void {
       runDiagnostics(doc, diagnosticCollection);
     }
   }
+
+  // Register formatting provider
+  const formatter = new JaiphFormattingProvider();
+  context.subscriptions.push(
+    vscode.languages.registerDocumentFormattingEditProvider(
+      { language: LANGUAGE_ID },
+      formatter,
+    ),
+  );
 }
 
 export function deactivate(): void {

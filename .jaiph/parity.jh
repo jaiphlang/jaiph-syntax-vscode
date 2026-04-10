@@ -1,21 +1,9 @@
 #!/usr/bin/env jaiph
 
-#
-# Run from the VS Code extension repo root (git root = plugin source).
-# Usage: jaiph path/to/this.jh <branch>
-#
-# 1. Shallow-clone jaiph (no full history) → tmp/jaiph-<sanitized-branch>
-# 2. Prompt: update grammar, syntax, and extension code vs the cloned tree
-# 3. Set package.json "version" to match jaiph's package.json
-# 4. npm install + npm run package (vsce → .vsix)
-#
-
 config {
   agent.backend = "claude"
   agent.claude_flags = "--permission-mode bypassPermissions"
 }
-
-script arg_nonempty = `[ -n "${1:-}" ]`
 
 script branch_safe_name = `printf '%s\n' "$1" | tr '/:' '--'`
 
@@ -31,32 +19,57 @@ script clone_jaiph_shallow = ```
   printf '%s\n' "$dest"
 ```
 
-script sync_plugin_version_from_jaiph_dir = ```
-  local jaiph_dir="$1"
-  local ver
-  ver="$(node -e "console.log(require('./$jaiph_dir/package.json').version)")" || return 1
-  node -e "
-const fs = require('fs');
-const v = process.argv[1];
-const p = 'package.json';
-const j = JSON.parse(fs.readFileSync(p, 'utf8'));
-j.version = v;
-fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n');
-  " "$ver" || return 1
-  printf '%s\n' "$ver"
+script sync_plugin_version_from_jaiph_dir = ```node
+  const fs = require('fs');
+  const path = require('path');
+  
+  const jaiphDir = process.argv[2];
+  if (!jaiphDir) {
+    console.error("Usage: sync_plugin_version_from_jaiph_dir <jaiph_dir>");
+    process.exit(1);
+  }
+  
+  const jaiphPkgPath = path.join(jaiphDir, 'package.json');
+  let ver;
+  try {
+    ver = require(path.resolve(jaiphPkgPath)).version;
+  } catch (e) {
+    console.error(`Failed to read version from ${jaiphPkgPath}: ${e.message}`);
+    process.exit(1);
+  }
+  
+  const pkgPath = path.resolve('package.json');
+  let pkg;
+  try {
+    pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  } catch (e) {
+    console.error(`Failed to read local package.json: ${e.message}`);
+    process.exit(1);
+  }
+  
+  pkg.version = ver;
+  
+  try {
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+  } catch (e) {
+    console.error(`Failed to write updated package.json: ${e.message}`);
+    process.exit(1);
+  }
+  
+  console.log(ver);
 ```
 
 script pack_extension = ```
   npm install --no-audit --no-fund && npm run package
 ```
 
-workflow default(branch) {
-  if not run arg_nonempty(branch) {
-    fail "usage: jaiph <this-file>.jh <branch>"
+workflow default(branch_param) {
+  const safe_branch = match branch_param {
+    "" => fail "usage: jaiph <this-file>.jh <branch>"
+    _ => run branch_safe_name(branch_param)
   }
 
-  const jaiph_dir = run clone_jaiph_shallow(branch)
-  const safe_branch = run branch_safe_name(branch)
+  const jaiph_dir = run clone_jaiph_shallow(safe_branch)
 
   prompt """
     ## sasa
@@ -71,10 +84,8 @@ workflow default(branch) {
        consistent with the above.
     4. Run npm run compile (or your usual compile) and fix issues until the
        extension builds and behaves as you expect.
-    5. Assume script code provided in fences by deafult requires shell highlighting
-       and when we provide python or python3, then it should use python highlighting,
-       for node it's JavaScript highlighting, etc. Fenced prompts should use the
-       markdown highlighting. Use Injection Grammars (TextMate) to achieve this.
+    5. The extension should highlight compiler errors (compile with jaiph on save)
+    6. The extension should allow format command using Jaiph formatter (jaiph format)
 
     Focus on parity with the current Jaiph grammar and compiler behavior for
     this branch.

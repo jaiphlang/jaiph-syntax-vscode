@@ -8,6 +8,7 @@
     { "include": "#import-statement" },
     { "include": "#script-fenced-blocks" },
     { "include": "#inline-script-fenced-blocks" },
+    { "include": "#fence-close" },
     { "include": "#prompt-triple-quoted" },
     { "include": "#triple-quoted-string" },
     { "include": "#declarations" },
@@ -73,10 +74,7 @@
             "5": { "name": "punctuation.definition.fence.begin.jaiph" },
             "6": { "name": "entity.name.tag.language.jaiph" }
           },
-          "end": "^\\s*(```)\\s*$",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.fence.end.jaiph" }
-          },
+          "while": "^(?!\\s*```\\s*$)",
           "contentName": "meta.embedded.block.python.jaiph",
           "patterns": [{ "include": "source.python" }]
         },
@@ -92,10 +90,7 @@
             "5": { "name": "punctuation.definition.fence.begin.jaiph" },
             "6": { "name": "entity.name.tag.language.jaiph" }
           },
-          "end": "^\\s*(```)\\s*$",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.fence.end.jaiph" }
-          },
+          "while": "^(?!\\s*```\\s*$)",
           "contentName": "meta.embedded.block.javascript.jaiph",
           "patterns": [{ "include": "source.js" }]
         },
@@ -111,10 +106,7 @@
             "5": { "name": "punctuation.definition.fence.begin.jaiph" },
             "6": { "name": "entity.name.tag.language.jaiph" }
           },
-          "end": "^\\s*(```)\\s*$",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.fence.end.jaiph" }
-          },
+          "while": "^(?!\\s*```\\s*$)",
           "contentName": "meta.embedded.block.ruby.jaiph",
           "patterns": [{ "include": "source.ruby" }]
         },
@@ -130,10 +122,7 @@
             "5": { "name": "punctuation.definition.fence.begin.jaiph" },
             "6": { "name": "entity.name.tag.language.jaiph" }
           },
-          "end": "^\\s*(```)\\s*$",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.fence.end.jaiph" }
-          },
+          "while": "^(?!\\s*```\\s*$)",
           "contentName": "meta.embedded.block.perl.jaiph",
           "patterns": [{ "include": "source.perl" }]
         },
@@ -149,10 +138,7 @@
             "5": { "name": "punctuation.definition.fence.begin.jaiph" },
             "6": { "name": "entity.name.tag.language.jaiph" }
           },
-          "end": "^\\s*(```)\\s*$",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.fence.end.jaiph" }
-          },
+          "while": "^(?!\\s*```\\s*$)",
           "contentName": "meta.embedded.block.lua.jaiph",
           "patterns": [{ "include": "source.lua" }]
         },
@@ -168,10 +154,7 @@
             "5": { "name": "punctuation.definition.fence.begin.jaiph" },
             "6": { "name": "entity.name.tag.language.jaiph" }
           },
-          "end": "^\\s*(```)\\s*$",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.fence.end.jaiph" }
-          },
+          "while": "^(?!\\s*```\\s*$)",
           "contentName": "meta.embedded.block.powershell.jaiph",
           "patterns": [{ "include": "source.powershell" }]
         },
@@ -187,10 +170,7 @@
             "5": { "name": "punctuation.definition.fence.begin.jaiph" },
             "6": { "name": "entity.name.tag.language.jaiph" }
           },
-          "end": "^\\s*(```)\\s*$",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.fence.end.jaiph" }
-          },
+          "while": "^(?!\\s*```\\s*$)",
           "contentName": "meta.embedded.block.javascript.jaiph",
           "patterns": [{ "include": "source.js" }]
         },
@@ -206,10 +186,7 @@
             "5": { "name": "punctuation.definition.fence.begin.jaiph" },
             "6": { "name": "entity.name.tag.language.jaiph" }
           },
-          "end": "^\\s*(```)\\s*$",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.fence.end.jaiph" }
-          },
+          "while": "^(?!\\s*```\\s*$)",
           "contentName": "meta.embedded.block.typescript.jaiph",
           "patterns": [{ "include": "source.ts" }]
         },
@@ -225,10 +202,7 @@
             "5": { "name": "punctuation.definition.fence.begin.jaiph" },
             "6": { "name": "entity.name.tag.language.jaiph" }
           },
-          "end": "^\\s*(```)\\s*$",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.fence.end.jaiph" }
-          },
+          "while": "^(?!\\s*```\\s*$)",
           "contentName": "meta.embedded.block.javascript.jaiph",
           "patterns": [{ "include": "source.js" }]
         },
@@ -244,10 +218,7 @@
             "5": { "name": "punctuation.definition.fence.begin.jaiph" },
             "6": { "name": "entity.name.tag.language.jaiph" }
           },
-          "end": "^\\s*(```)\\s*$",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.fence.end.jaiph" }
-          },
+          "while": "^(?!\\s*```\\s*$)",
           "contentName": "meta.embedded.block.php.jaiph",
           "patterns": [{ "include": "source.php" }]
         },
@@ -263,12 +234,18 @@
             "5": { "name": "punctuation.definition.fence.begin.jaiph" },
             "6": { "name": "entity.name.tag.language.jaiph" }
           },
-          "end": "^\\s*(```)\\s*$",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.fence.end.jaiph" }
-          },
+          "while": "^(?!\\s*```\\s*$)",
           "contentName": "meta.embedded.block.shell.jaiph",
           "patterns": [{ "include": "source.shell" }]
+        }
+      ]
+    },
+
+    "fence-close": {
+      "patterns": [
+        {
+          "name": "punctuation.definition.fence.end.jaiph",
+          "match": "^\\s*```\\s*$"
         }
       ]
     },

@@ -2,7 +2,7 @@
   "name": "jaiph-syntax-vscode",
   "displayName": "Jaiph Syntax",
   "description": "Syntax highlighting and compiler diagnostics for the Jaiph orchestration language (.jh files)",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "publisher": "jaiph",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -65,6 +65,12 @@
           "meta.embedded.block.shell.jaiph": "shellscript",
           "meta.embedded.block.python.jaiph": "python",
           "meta.embedded.block.javascript.jaiph": "javascript",
+          "meta.embedded.block.typescript.jaiph": "typescript",
+          "meta.embedded.block.ruby.jaiph": "ruby",
+          "meta.embedded.block.perl.jaiph": "perl",
+          "meta.embedded.block.lua.jaiph": "lua",
+          "meta.embedded.block.powershell.jaiph": "powershell",
+          "meta.embedded.block.php.jaiph": "php",
           "meta.embedded.block.markdown.jaiph": "markdown"
         }
       },
